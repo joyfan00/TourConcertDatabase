@@ -3,76 +3,224 @@ import javax.swing.border.Border;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.Statement;
 
 public class UI {
-    public void goToHome () {
+    // CUSTOMER OR ORGANIZER PAGE
+    public void customerOrOrganizer () {
+        //setting up the frame and the buttonss
+        JFrame frame = new JFrame("Customer or Organizer");
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        JButton customer = new JButton("Customer");
+        customer.setFont(new Font("Calibri", Font.PLAIN, 30));
+        customer.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                frame.dispose();
+                goToCustomerHome();
+            }
+        });
+        JButton organizer = new JButton("Event Organizer");
+        organizer.setFont(new Font("Calibri", Font.PLAIN, 30));
+        organizer.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                frame.dispose();
+                goToOrganizerHome();
+            }
+        });
+
+        // add buttons to frame
+        frame.add(customer);
+        frame.add(organizer);
+        // layout
+        frame.setLayout(new GridLayout(2, 1));
+        // frame last touches
+        frame.setSize(500, 500);
+        frame.setVisible(true);
+    }
+    // CUSTOMER HOME PAGE
+    public void goToCustomerHome () {
         // Setting Home Screen
-        JFrame home = new JFrame("Home Screen");
+        JFrame home = new JFrame("Customer Home Screen");
         home.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         home.setSize(1000,1000);
         // Buttons to indicate which action the user would like to do on the database
-        JButton songinfo = new JButton("Song Info Based on Concert Info");
+        JButton new_existing_user = new JButton("New or Existing User Information");
+        new_existing_user.setFont(new Font("Calibri", Font.PLAIN, 40));
+        new_existing_user.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                home.dispose();
+                new_or_existing_user();
+            }
+        });
+        JButton songinfo = new JButton("Find My Setlist");
         songinfo.setFont(new Font("Calibri", Font.PLAIN, 40));
         songinfo.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                home.dispose();
                 inputConcertInfo();
             }
         });
-        JButton artist_concerts_info = new JButton("Artists & Concerts Based on Date Range & City");
+        JButton artist_concerts_info = new JButton("Artists Touring Near Me");
         artist_concerts_info.setFont(new Font("Calibri", Font.PLAIN, 40));
         artist_concerts_info.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                home.dispose();
                 inputDateRangeAndCity();
             }
         });
-        JButton merch_tickets = new JButton("Buying Merchandise & Tickets");
+        JButton merch_tickets = new JButton("Purchase Merchandise or Tickets");
         merch_tickets.setFont(new Font("Calibri", Font.PLAIN, 40));
         merch_tickets.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                home.dispose();
                 inputUserandConcertInfo();
             }
         });
-        JButton delete_add_tours = new JButton("Delete or Add Tour");
-        delete_add_tours.setFont(new Font("Calibri", Font.PLAIN, 40));
-        delete_add_tours.addActionListener(new ActionListener() {
+        JButton customer_organizer = new JButton("Back to Customer/Organizer Screen");
+        customer_organizer.setFont(new Font("Calibri", Font.PLAIN, 40));
+        customer_organizer.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                input_tour_name();
+                home.dispose();
+                customerOrOrganizer();
             }
         });
-        JButton add_artist = new JButton("Add new Artist for Concert");
-        add_artist.setFont(new Font("Calibri", Font.PLAIN, 40));
-        add_artist.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
 
-            }
-        });
-        JButton add_song_setlist = new JButton("Add New Songs to Setlist");
-        add_song_setlist.setFont(new Font("Calibri", Font.PLAIN, 40));
-        add_song_setlist.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                inputConcert();
-            }
-        });
         // Add buttons to home screen
+        home.add(new_existing_user);
         home.add(songinfo);
         home.add(artist_concerts_info);
         home.add(merch_tickets);
-        home.add(delete_add_tours);
-        home.add(add_artist);
-        home.add(add_song_setlist);
+        home.add(customer_organizer);
         // setting layout
-        home.setLayout(new GridLayout(6, 0));
+        home.setLayout(new GridLayout(5, 1));
         // Make home screen visible
         home.setVisible(true);
     }
-    // query 1
-    // inputing concert info to filter a specific conert
+
+    // QUERY #1:
+    // NEW OR EXISTING USER ACCESSING INFORMATION
+    // CHOOSING NEW OR EXISTING USER
+    public void new_or_existing_user () {
+        //frame and buttons
+        JFrame user = new JFrame("New or Existing User");
+        JButton new_user = new JButton("New User");
+        new_user.setFont(new Font("Calibri", Font.PLAIN, 40));
+        new_user.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                user.dispose();
+                new_user_info();
+            }
+        });
+        JButton existing_user = new JButton("Existing User");
+        existing_user.setFont(new Font("Calibri", Font.PLAIN, 40));
+        existing_user.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                user.dispose();
+                existing_user_info();
+            }
+        });
+
+        // add buttons to frame
+        user.add(new_user);
+        user.add(existing_user);
+        // set layout
+        user.setLayout(new GridLayout(2, 1));
+        // frame last touches
+        user.setSize(500, 500);
+        user.setVisible(true);
+
+    }
+
+    // NEW USER INFORMATION
+    public void new_user_info () {
+        // frame and buttons
+        JFrame new_user = new JFrame("New User Information");
+        JPanel labels_texts = new JPanel();
+        JPanel buttons = new JPanel();
+        JLabel name = new JLabel("Name: ");
+        name.setFont(new Font("Calibri", Font.PLAIN, 30));
+        JTextField name_input = new JTextField();
+        name_input.setFont(new Font("Calibri", Font.PLAIN, 30));
+        JButton back_home = new JButton("Back to Home");
+        back_home.setFont(new Font("Calibri", Font.PLAIN, 30));
+        back_home.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                new_user.dispose();
+                goToCustomerHome();
+            }
+        });
+        JButton submit = new JButton("Submit Info");
+        submit.setFont(new Font("Calibri", Font.PLAIN, 30));
+        submit.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String name_text = name_input.getText().trim();
+                new_user.dispose();
+            }
+        });
+
+        // set layout of panels
+        labels_texts.setLayout(new BoxLayout(labels_texts, BoxLayout.PAGE_AXIS));
+        buttons.setLayout(new FlowLayout());
+
+        // add buttons to panels to add panels to frame
+        labels_texts.add(name);
+        labels_texts.add(name_input);
+        buttons.add(back_home);
+        buttons.add(submit);
+        new_user.add(labels_texts, BorderLayout.PAGE_START);
+        new_user.add(buttons, BorderLayout.PAGE_END);
+        // frame last touches
+        new_user.setSize(500, 500);
+        new_user.setVisible(true);
+    }
+
+    // EXISTING USER INFORMATION
+    public void existing_user_info () {
+        JFrame existing_user = new JFrame("Existing User Info");
+        JPanel labels_and_text = new JPanel();
+        JLabel user_id = new JLabel("User ID: ");
+        JTextField user_id_input = new JTextField();
+        user_id.setFont(new Font("Calibri", Font.PLAIN, 30));
+        user_id_input.setFont(new Font("Calibri", Font.PLAIN, 30));
+        JButton back_home = new JButton("Back to Home");
+        back_home.setFont(new Font("Calibri", Font.PLAIN, 30));
+        back_home.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                existing_user.dispose();
+                goToCustomerHome();
+            }
+        });
+        JButton submit = new JButton("Submit Info");
+        submit.setFont(new Font("Calibri", Font.PLAIN, 30));
+        submit.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String user_input_text = user_id_input.getText().trim();
+                existing_user.dispose();
+                // TODO: add function to provide user data
+            }
+        });
+    }
+
+    // QUERY #2
+    // FIND MY SETLIST
+    // FILTER USING CONCERT INFO
     public void inputConcertInfo () {
         // set up objects (JFrame, buttons, panels, textfields)
         JFrame concertinfo = new JFrame("Concert Info");
@@ -96,7 +244,7 @@ public class UI {
             @Override
             public void actionPerformed(ActionEvent e) {
                 concertinfo.dispose();
-                goToHome();
+                goToCustomerHome();
             }
         });
         JButton submit = new JButton("Submit Concert Info");
@@ -108,6 +256,7 @@ public class UI {
                 String time_text = time_input.getText().trim();
                 String city_text = city_input.getText().trim();
                 concertinfo.dispose();
+                //TODO: print out song info
             }
         });
 
@@ -127,8 +276,9 @@ public class UI {
         concertinfo.setSize(800, 500);
         concertinfo.setVisible(true);
     }
-    // query 2
-    // input date range and city
+
+    // QUERY #3
+    // ARTISTS TOURING NEAR ME
     public void inputDateRangeAndCity() {
         // initialization of JFrames, buttons, panels, and defining characteristics regarding smaller attributes
         JFrame concertinfo = new JFrame("Concert Info");
@@ -153,7 +303,7 @@ public class UI {
             @Override
             public void actionPerformed(ActionEvent e) {
                 concertinfo.dispose();
-                goToHome();
+                goToCustomerHome();
             }
         });
         JButton submit = new JButton("Submit Info");
@@ -165,6 +315,7 @@ public class UI {
                 String end_date_text = end_date_input.getText().trim();
                 String city_name = city_input.getText().trim();
                 concertinfo.dispose();
+                //TODO: print out artists, dates, number of available tickets
             }
         });
 
@@ -185,8 +336,9 @@ public class UI {
         concertinfo.setVisible(true);
     }
 
-    //query 3
-    // input user info
+    // QUERY #4
+    // PURCHASE MERCHANDISE OR TICKETS
+    // GET USER AND CONCERT INFO
     public void inputUserandConcertInfo() {
         // define objects (JFrame, panels, buttons, labels, textfields)
         JFrame user_concert_info = new JFrame("User and Concert Info");
@@ -214,7 +366,7 @@ public class UI {
             @Override
             public void actionPerformed(ActionEvent e) {
                 user_concert_info.dispose();
-                goToHome();
+                goToCustomerHome();
             }
         });
         JButton submit = new JButton("Submit Info");
@@ -227,6 +379,7 @@ public class UI {
                 String city_name = city_input.getText().trim();
                 String date = day_input.getText().trim();
                 user_concert_info.dispose();
+                merchandise_or_tickets();
             }
         });
 
@@ -249,7 +402,146 @@ public class UI {
         user_concert_info.setVisible(true);
     }
 
-    //query 4
+    // MERCHANDISE OR TICKETS SCREEN
+    public void merchandise_or_tickets () {
+        JFrame merch_tickets = new JFrame("Merchandise or Tickets");
+        JButton merchandise = new JButton("Buying Merchandise");
+        merchandise.setFont(new Font("Calibri", Font.PLAIN, 30));
+        merchandise.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                merch_tickets.dispose();
+                merchandise_order();
+            }
+        });
+        JButton tickets = new JButton("Buying Tickets");
+        tickets.setFont(new Font("Calibri", Font.PLAIN, 30));
+        tickets.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                merch_tickets.dispose();
+                ticket_order();
+            }
+        });
+        JButton back_home = new JButton("Back to Home");
+        back_home.setFont(new Font("Calibri", Font.PLAIN, 30));
+        back_home.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                merch_tickets.dispose();
+                goToCustomerHome();
+            }
+        });
+
+        merch_tickets.add(merchandise);
+        merch_tickets.add(tickets);
+        merch_tickets.add(back_home);
+        merch_tickets.setLayout(new GridLayout(3, 1));
+        merch_tickets.setSize(500, 500);
+        merch_tickets.setVisible(true);
+    }
+
+    // MERCHANDISE ORDER FORM
+    public void merchandise_order () {
+        JFrame merch_order = new JFrame("Merchandise Order");
+        JLabel merch_name = new JLabel("Merchandise Item Name:");
+        merch_name.setFont(new Font("Calibri", Font.PLAIN, 30));
+        JTextField merch_name_input = new JTextField();
+        merch_name_input.setFont(new Font("Calibri", Font.PLAIN, 30));
+        JButton back_home = new JButton("Back to Home Screen");
+        back_home.setFont(new Font("Calibri", Font.PLAIN, 30));
+        back_home.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                merch_order.dispose();
+                goToCustomerHome();
+            }
+        });
+        JButton submit = new JButton("Submit Info");
+        submit.setFont(new Font("Calibri", Font.PLAIN, 30));
+        submit.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                merch_order.dispose();
+                //TODO:add confirmation status, tell how much charged to user account
+            }
+        });
+    }
+
+    // TICKET ORDER FORM
+    public void ticket_order () {
+        JFrame ticket_order = new JFrame("Merchandise Order");
+        JLabel ticket_name = new JLabel("Merchandise Item Name:");
+        ticket_name.setFont(new Font("Calibri", Font.PLAIN, 30));
+        JTextField ticket_name_input = new JTextField();
+        ticket_name_input.setFont(new Font("Calibri", Font.PLAIN, 30));
+        JButton back_home = new JButton("Back to Home Screen");
+        back_home.setFont(new Font("Calibri", Font.PLAIN, 30));
+        back_home.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                ticket_order.dispose();
+                goToCustomerHome();
+            }
+        });
+        JButton submit = new JButton("Submit Info");
+        submit.setFont(new Font("Calibri", Font.PLAIN, 30));
+        submit.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String ticket_type = ticket_name_input.getText().trim();
+                ticket_order.dispose();
+                //TODO:add confirmation status, tell how much charged to user account (if worked)
+            }
+        });
+    }
+
+    //ORGANIZER HOME PAGE
+    public void goToOrganizerHome () {
+        // Setting Home Screen
+        JFrame home = new JFrame("Customer Home Screen");
+        home.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        home.setSize(1000,1000);
+        // Buttons to indicate which action the user would like to do on the database
+        JButton add_artist = new JButton("Add new Artist for Concert");
+        add_artist.setFont(new Font("Calibri", Font.PLAIN, 40));
+        add_artist.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                home.dispose();
+                inputConcertArtistInfo();
+            }
+        });
+        JButton add_song_setlist = new JButton("Add New Songs to Setlist");
+        add_song_setlist.setFont(new Font("Calibri", Font.PLAIN, 40));
+        add_song_setlist.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                home.dispose();
+                inputConcert();
+            }
+        });
+        JButton customer_organizer = new JButton("Back to Customer/Organizer Screen");
+        customer_organizer.setFont(new Font("Calibri", Font.PLAIN, 40));
+        customer_organizer.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                home.dispose();
+                customerOrOrganizer();
+            }
+        });
+        // Add buttons to home screen
+        home.add(add_artist);
+        home.add(add_song_setlist);
+        home.add(customer_organizer);
+        // setting layout
+        home.setLayout(new GridLayout(3, 1));
+        // Make home screen visible
+        home.setVisible(true);
+    }
+
+    // QUERY #5
+    // ADD NEW ARTIST TO CONCERT
     public void inputConcertArtistInfo() {
         JFrame concert_artist_info = new JFrame();
         JPanel labels_and_text = new JPanel();
@@ -260,7 +552,7 @@ public class UI {
             @Override
             public void actionPerformed(ActionEvent e) {
                 concert_artist_info.dispose();
-                goToHome();
+                goToCustomerHome();
             }
         });
         JButton submit = new JButton("Submit Info");
@@ -268,83 +560,15 @@ public class UI {
         submit.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-
+                concert_artist_info.dispose();
+                //TODO: add confirmation that artist has been added to the concert, print out concert details
             }
         });
     }
 
-    //query 4
-    public void input_tour_name() {
-        JFrame input_tour = new JFrame("Tour Information");
-        JPanel labels_and_text = new JPanel();
-        JPanel buttons = new JPanel();
-        JLabel tour_name = new JLabel("Tour name: ");
-        tour_name.setFont(new Font("Calibri", Font.PLAIN, 30));
-        JTextField tour_name_input = new JTextField();
-        tour_name_input.setFont(new Font("Calibri", Font.PLAIN, 30));
-        JButton back_home = new JButton("Back to Home");
-        back_home.setFont(new Font("Calibri", Font.PLAIN, 30));
-        back_home.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                input_tour.dispose();
-                goToHome();
-            }
-        });
-        JButton submit = new JButton("Submit Info");
-        submit.setFont(new Font("Calibri", Font.PLAIN, 30));
-        submit.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                String tour_name_text = tour_name_input.getText().trim();
-                input_tour.dispose();
-                button_add_delete_tour(tour_name_text);
-            }
-        });
-
-        labels_and_text.setLayout(new BoxLayout(labels_and_text, BoxLayout.PAGE_AXIS));
-        buttons.setLayout(new FlowLayout());
-
-        labels_and_text.add(tour_name);
-        labels_and_text.add(tour_name_input);
-        buttons.add(back_home);
-        buttons.add(submit);
-        input_tour.add(labels_and_text, BorderLayout.PAGE_START);
-        input_tour.add(buttons, BorderLayout.PAGE_END);
-        input_tour.setSize(500, 300);
-        input_tour.setVisible(true);
-
-    }
-
-    public void button_add_delete_tour (String tour) {
-        JFrame two_buttons = new JFrame("Add or Delete Tour");
-        JButton add_tour = new JButton("Add Tour");
-        add_tour.setFont(new Font("Calibri", Font.PLAIN, 30));
-        add_tour.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                //add tour
-                // add concerts
-                // add setlists for the concerts
-                // add song for the concert
-            }
-        });
-        JButton delete_tour = new JButton("Add Tour");
-        delete_tour.setFont(new Font("Calibri", Font.PLAIN, 30));
-        delete_tour.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                //delete tour
-            }
-        });
-        two_buttons.add(add_tour);
-        two_buttons.add(delete_tour);
-        two_buttons.setLayout(new GridLayout(2, 1));
-        two_buttons.setSize(200, 200);
-
-    }
-
-    //query 6
+    // QUERY #6
+    // ADD NEW SONGS TO SET LIST
+    // INPUT CONCERT INFORMATION
     public void inputConcert () {
         JFrame concert_info = new JFrame();
         JPanel labels_and_text = new JPanel();
@@ -371,7 +595,7 @@ public class UI {
             @Override
             public void actionPerformed(ActionEvent e) {
                 concert_info.dispose();
-                goToHome();
+                goToOrganizerHome();
             }
         });
         JButton submit = new JButton("Submit Info");
@@ -384,6 +608,8 @@ public class UI {
                 String date_text = date_input.getText().trim();
                 String time_text = time_input.getText().trim();
                 concert_info.dispose();
+                //TODO: get confirmation if the concert is valid
+
             }
         });
 
@@ -406,9 +632,43 @@ public class UI {
         concert_info.setVisible(true);
     }
 
+    public void inputNewSong () {
+        JFrame song_info = new JFrame("New Song Information");
+        JLabel song_name = new JLabel("Song Name: ");
+        JLabel song_artist = new JLabel("Song Artist: ");
+        JLabel song_album = new JLabel("Song Album (if not part of one, leave blank): ");
+        JLabel song_length = new JLabel("Song Length (mm:ss): ");
+        JTextField song_name_input = new JTextField();
+        JTextField song_artist_input = new JTextField();
+        JTextField song_album_input = new JTextField();
+        JTextField song_length_input = new JTextField();
+        JButton back_home = new JButton();
+        JButton submit = new JButton();
+        back_home.setFont(new Font("Calibri", Font.PLAIN, 30));
+        submit.setFont(new Font("Calibri", Font.PLAIN, 30));
+        back_home.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                song_info.dispose();
+                goToOrganizerHome();
+            }
+        });
+        submit.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String song_name_text = song_name_input.getText().trim();
+                String song_artist_text = song_artist_input.getText().trim();
+                String song_album_text = song_album_input.getText().trim();
+                String song_length_text = song_length_input.getText().trim();
+                song_info.dispose();
+                //TODO: confirmation of transaction
+            }
+        });
+    }
+    
     public static void main (String [] args) {
         UI program = new UI();
-        program.goToHome();
+        program.customerOrOrganizer();
 
     }
 }

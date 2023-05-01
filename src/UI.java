@@ -8,6 +8,7 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
+import java.util.Locale;
 
 public class UI {
     // CUSTOMER OR ORGANIZER PAGE
@@ -77,13 +78,22 @@ public class UI {
                 inputDateRangeAndCity();
             }
         });
-        JButton merch_tickets = new JButton("Purchase Merchandise or Tickets");
-        merch_tickets.setFont(new Font("Calibri", Font.PLAIN, 40));
-        merch_tickets.addActionListener(new ActionListener() {
+        JButton purchase_merch = new JButton("Purchase Merchandise");
+        purchase_merch.setFont(new Font("Calibri", Font.PLAIN, 40));
+        purchase_merch.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 home.dispose();
-                inputUserandConcertInfo();
+                inputUserandConcertInfoMerch();
+            }
+        });
+        JButton purchase_tickets = new JButton("Purchase Tickets");
+        purchase_tickets.setFont(new Font("Calibri", Font.PLAIN, 40));
+        purchase_tickets.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                home.dispose();
+                inputUserandConcertInfoTickets();
             }
         });
         JButton customer_organizer = new JButton("Back to Customer/Organizer Screen");
@@ -100,10 +110,11 @@ public class UI {
         home.add(new_existing_user);
         home.add(songinfo);
         home.add(artist_concerts_info);
-        home.add(merch_tickets);
+        home.add(purchase_merch);
+        home.add(purchase_tickets);
         home.add(customer_organizer);
         // setting layout
-        home.setLayout(new GridLayout(5, 1));
+        home.setLayout(new GridLayout(6, 1));
         // Make home screen visible
         home.setVisible(true);
     }
@@ -170,6 +181,7 @@ public class UI {
             public void actionPerformed(ActionEvent e) {
                 String name_text = name_input.getText().trim();
                 new_user.dispose();
+                //TODO: tell user their user id
             }
         });
 
@@ -214,7 +226,7 @@ public class UI {
             public void actionPerformed(ActionEvent e) {
                 String user_input_text = user_id_input.getText().trim();
                 existing_user.dispose();
-                // TODO: add function to provide user data
+                // TODO: add function to provide user data like balance
             }
         });
 
@@ -231,26 +243,20 @@ public class UI {
 
     }
 
-    // QUERY #2
-    // FIND MY SETLIST
-    // FILTER USING CONCERT INFO
+    // QUERY #2: FIND MY SONGS
     public void inputConcertInfo () {
         // set up objects (JFrame, buttons, panels, textfields)
         JFrame concertinfo = new JFrame("Concert Info");
         JPanel concert_artist_info = new JPanel();
         JPanel buttons_field = new JPanel();
-        JLabel artist = new JLabel("Artist Name: ");
-        artist.setFont(new Font("Calibri", Font.PLAIN, 30));
-        JTextField artist_input = new JTextField();
-        artist_input.setFont(new Font("Calibri", Font.PLAIN, 30));
-        JLabel time = new JLabel("Time of Concert:");
-        time.setFont(new Font("Calibri", Font.PLAIN, 30));
-        JTextField time_input = new JTextField();
-        time_input.setFont(new Font("Calibri", Font.PLAIN, 30));
-        JLabel city = new JLabel("City of Concert:");
-        city.setFont(new Font("Calibri", Font.PLAIN, 30));
-        JTextField city_input = new JTextField();
-        city_input.setFont(new Font("Calibri", Font.PLAIN, 30));
+        JLabel tour_name = new JLabel("Tour name: ");
+        tour_name.setFont(new Font("Calibri", Font.PLAIN, 30));
+        JTextField tour_name_input = new JTextField();
+        tour_name_input.setFont(new Font("Calibri", Font.PLAIN, 30));
+        JLabel date = new JLabel("Date (in yyyy-mm-dd format):");
+        date.setFont(new Font("Calibri", Font.PLAIN, 30));
+        JTextField date_input = new JTextField();
+        date_input.setFont(new Font("Calibri", Font.PLAIN, 30));
         JButton back_to_home = new JButton("Back to Home");
         back_to_home.setFont(new Font("Calibri", Font.PLAIN, 30));
         back_to_home.addActionListener(new ActionListener() {
@@ -265,9 +271,8 @@ public class UI {
         submit.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                String artist_name = artist_input.getText().trim();
-                String time_text = time_input.getText().trim();
-                String city_text = city_input.getText().trim();
+                String tour_name = tour_name_input.getText().trim();
+                String date_text = date_input.getText().trim();
                 concertinfo.dispose();
                 //TODO: print out song info
             }
@@ -276,12 +281,10 @@ public class UI {
         concert_artist_info.setLayout(new BoxLayout(concert_artist_info, BoxLayout.PAGE_AXIS));
         buttons_field.setLayout(new FlowLayout());
 
-        concert_artist_info.add(artist);
-        concert_artist_info.add(artist_input);
-        concert_artist_info.add(time);
-        concert_artist_info.add(time_input);
-        concert_artist_info.add(city);
-        concert_artist_info.add(city_input);
+        concert_artist_info.add(tour_name);
+        concert_artist_info.add(tour_name_input);
+        concert_artist_info.add(date);
+        concert_artist_info.add(date_input);
         buttons_field.add(back_to_home);
         buttons_field.add(submit);
         concertinfo.add(concert_artist_info, BorderLayout.PAGE_START);
@@ -290,18 +293,17 @@ public class UI {
         concertinfo.setVisible(true);
     }
 
-    // QUERY #3
-    // ARTISTS TOURING NEAR ME
+    // QUERY #3: ARTISTS TOURING NEAR ME
     public void inputDateRangeAndCity() {
         // initialization of JFrames, buttons, panels, and defining characteristics regarding smaller attributes
         JFrame concertinfo = new JFrame("Concert Info");
         JPanel date_city_info = new JPanel();
         JPanel buttons_field = new JPanel();
-        JLabel start_date = new JLabel("Start Date: ");
+        JLabel start_date = new JLabel("Start Date (in yyyy-mm-dd format): ");
         start_date.setFont(new Font("Calibri", Font.PLAIN, 30));
         JTextField start_date_input = new JTextField();
         start_date_input.setFont(new Font("Calibri", Font.PLAIN, 30));
-        JLabel end_date = new JLabel("End Date: ");
+        JLabel end_date = new JLabel("End Date (in yyyy-mm-dd format): ");
         end_date.setFont(new Font("Calibri", Font.PLAIN, 30));
         JTextField end_date_input = new JTextField();
         end_date_input.setFont(new Font("Calibri", Font.PLAIN, 30));
@@ -309,6 +311,10 @@ public class UI {
         city.setFont(new Font("Calibri", Font.PLAIN, 30));
         JTextField city_input = new JTextField();
         city_input.setFont(new Font("Calibri", Font.PLAIN, 30));
+        JLabel state = new JLabel("State: ");
+        state.setFont(new Font("Calibri", Font.PLAIN, 30));
+        JTextField state_input = new JTextField();
+        state_input.setFont(new Font("Calibri", Font.PLAIN, 30));
         JButton back_to_home = new JButton("Back to Home");
         back_to_home.setFont(new Font("Calibri", Font.PLAIN, 30));
         // add action to home button
@@ -327,6 +333,7 @@ public class UI {
                 String start_date_text = start_date_input.getText().trim();
                 String end_date_text = end_date_input.getText().trim();
                 String city_name = city_input.getText().trim();
+                String state_name = state_input.getText().trim();
                 concertinfo.dispose();
                 //TODO: print out artists, dates, number of available tickets
             }
@@ -341,6 +348,8 @@ public class UI {
         date_city_info.add(end_date_input);
         date_city_info.add(city);
         date_city_info.add(city_input);
+        date_city_info.add(state);
+        date_city_info.add(state_input);
         buttons_field.add(back_to_home);
         buttons_field.add(submit);
         concertinfo.add(date_city_info, BorderLayout.PAGE_START);
@@ -349,30 +358,34 @@ public class UI {
         concertinfo.setVisible(true);
     }
 
-    // QUERY #4
-    // PURCHASE MERCHANDISE OR TICKETS
-    // GET USER AND CONCERT INFO
-    public void inputUserandConcertInfo() {
+    // QUERY #4: PURCHASE MERCHANDISE
+    public void inputUserandConcertInfoMerch() {
         // define objects (JFrame, panels, buttons, labels, textfields)
-        JFrame user_concert_info = new JFrame("User and Concert Info");
+        JFrame user_concert_info = new JFrame("User, Concert, and Merch Information");
         JPanel label_and_text = new JPanel();
         JPanel buttons_field = new JPanel();
-        JLabel name = new JLabel("User Name:");
-        name.setFont(new Font("Calibri", Font.PLAIN, 30));
-        JTextField name_input = new JTextField();
-        name_input.setFont(new Font("Calibri", Font.PLAIN, 30));
-        JLabel artist = new JLabel("Concert Artist:");
-        artist.setFont(new Font("Calibri", Font.PLAIN, 30));
-        JTextField artist_input = new JTextField();
-        artist_input.setFont(new Font("Calibri", Font.PLAIN, 30));
-        JLabel city = new JLabel("Concert City:");
-        city.setFont(new Font("Calibri", Font.PLAIN, 30));
-        JTextField city_input = new JTextField();
-        city_input.setFont(new Font("Calibri", Font.PLAIN, 30));
-        JLabel day = new JLabel("Concert Date (in mm:dd:yyyy format):");
-        day.setFont(new Font("Calibri", Font.PLAIN, 30));
-        JTextField day_input = new JTextField();
-        day_input.setFont(new Font("Calibri", Font.PLAIN, 30));
+        JLabel user_id = new JLabel("User ID:");
+        user_id.setFont(new Font("Calibri", Font.PLAIN, 30));
+        JTextField user_id_input = new JTextField();
+        user_id_input.setFont(new Font("Calibri", Font.PLAIN, 30));
+        JLabel tour_name = new JLabel("Concert Artist:");
+        tour_name.setFont(new Font("Calibri", Font.PLAIN, 30));
+        JTextField tour_name_input = new JTextField();
+        tour_name_input.setFont(new Font("Calibri", Font.PLAIN, 30));
+        JLabel date = new JLabel("Concert Date (in mm:dd:yyyy format):");
+        date.setFont(new Font("Calibri", Font.PLAIN, 30));
+        JTextField date_input = new JTextField();
+        date_input.setFont(new Font("Calibri", Font.PLAIN, 30));
+        JLabel merchandise_item = new JLabel("Merchandise Item (shirt, hoodie, hat,\n" +
+                "pants, keychain, poster, other clothing,\n" +
+                "other item):");
+        merchandise_item.setFont(new Font("Calibri", Font.PLAIN, 30));
+        JTextField merchandise_item_input = new JTextField();
+        merchandise_item_input.setFont(new Font("Calibri", Font.PLAIN, 30));
+        JLabel quantity = new JLabel("Quantity:");
+        quantity.setFont(new Font("Calibri", Font.PLAIN, 30));
+        JTextField quantity_input = new JTextField();
+        quantity_input.setFont(new Font("Calibri", Font.PLAIN, 30));
         JButton back_home = new JButton("Back to Home");
         back_home.setFont(new Font("Calibri", Font.PLAIN, 30));
         back_home.addActionListener(new ActionListener() {
@@ -387,88 +400,73 @@ public class UI {
         submit.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                String user_name = name_input.getText().trim();
-                String artist_name = artist_input.getText().trim();
-                String city_name = city_input.getText().trim();
-                String date = day_input.getText().trim();
+                String user_name = user_id_input.getText().trim();
+                String artist_name = tour_name_input.getText().trim();
+                String date = date_input.getText().trim();
+                String merchandise_item = merchandise_item_input.getText().trim();
+                String quantity = quantity_input.getText().trim();
                 user_concert_info.dispose();
-                merchandise_or_tickets();
+                //TODO: query
             }
         });
 
         label_and_text.setLayout(new BoxLayout(label_and_text, BoxLayout.PAGE_AXIS));
         buttons_field.setLayout(new FlowLayout());
 
-        label_and_text.add(name);
-        label_and_text.add(name_input);
-        label_and_text.add(artist);
-        label_and_text.add(artist_input);
-        label_and_text.add(city);
-        label_and_text.add(city_input);
-        label_and_text.add(day);
-        label_and_text.add(day_input);
+        label_and_text.add(user_id);
+        label_and_text.add(user_id_input);
+        label_and_text.add(tour_name);
+        label_and_text.add(tour_name_input);
+        label_and_text.add(date);
+        label_and_text.add(date_input);
+        label_and_text.add(date);
+        label_and_text.add(date_input);
+        label_and_text.add(merchandise_item);
+        label_and_text.add(merchandise_item_input);
+        label_and_text.add(quantity);
+        label_and_text.add(quantity_input);
         buttons_field.add(back_home);
         buttons_field.add(submit);
         user_concert_info.add(label_and_text, BorderLayout.PAGE_START);
         user_concert_info.add(buttons_field, BorderLayout.PAGE_END);
-        user_concert_info.setSize(800, 600);
+        user_concert_info.setSize(1300, 600);
         user_concert_info.setVisible(true);
     }
 
-    // MERCHANDISE OR TICKETS SCREEN
-    public void merchandise_or_tickets () {
-        JFrame merch_tickets = new JFrame("Merchandise or Tickets");
-        JButton merchandise = new JButton("Buying Merchandise");
-        merchandise.setFont(new Font("Calibri", Font.PLAIN, 30));
-        merchandise.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                merch_tickets.dispose();
-                merchandise_order();
-            }
-        });
-        JButton tickets = new JButton("Buying Tickets");
-        tickets.setFont(new Font("Calibri", Font.PLAIN, 30));
-        tickets.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                merch_tickets.dispose();
-                ticket_order();
-            }
-        });
+    // QUERY #5: PURCHASE TICKETS
+    public void inputUserandConcertInfoTickets() {
+        // define objects (JFrame, panels, buttons, labels, textfields)
+        JFrame user_concert_info = new JFrame("User, Concert, and Ticket Information");
+        JPanel label_and_text = new JPanel();
+        JPanel buttons_field = new JPanel();
+        JLabel user_id = new JLabel("User ID:");
+        user_id.setFont(new Font("Calibri", Font.PLAIN, 30));
+        JTextField user_id_input = new JTextField();
+        user_id_input.setFont(new Font("Calibri", Font.PLAIN, 30));
+        JLabel tour_name = new JLabel("Concert Artist:");
+        tour_name.setFont(new Font("Calibri", Font.PLAIN, 30));
+        JTextField tour_name_input = new JTextField();
+        tour_name_input.setFont(new Font("Calibri", Font.PLAIN, 30));
+        JLabel date = new JLabel("Concert Date (in mm:dd:yyyy format):");
+        date.setFont(new Font("Calibri", Font.PLAIN, 30));
+        JTextField date_input = new JTextField();
+        date_input.setFont(new Font("Calibri", Font.PLAIN, 30));
+        JLabel ticket_section = new JLabel("Ticket Section (VIP, General Admission,\n" +
+                "Premium, Upper (Seated), Lower (Seated),\n" +
+                "Other, Balcony):");
+        ticket_section.setFont(new Font("Calibri", Font.PLAIN, 30));
+        JTextField ticket_section_input = new JTextField();
+        ticket_section_input.setFont(new Font("Calibri", Font.PLAIN, 30));
+        JLabel quantity = new JLabel("Quantity:");
+        quantity.setFont(new Font("Calibri", Font.PLAIN, 30));
+        JTextField quantity_input = new JTextField();
+        quantity_input.setFont(new Font("Calibri", Font.PLAIN, 30));
         JButton back_home = new JButton("Back to Home");
         back_home.setFont(new Font("Calibri", Font.PLAIN, 30));
         back_home.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                merch_tickets.dispose();
-                goToCustomerHome();
-            }
-        });
-
-        merch_tickets.add(merchandise);
-        merch_tickets.add(tickets);
-        merch_tickets.add(back_home);
-        merch_tickets.setLayout(new GridLayout(3, 1));
-        merch_tickets.setSize(500, 500);
-        merch_tickets.setVisible(true);
-    }
-
-    // MERCHANDISE ORDER FORM
-    public void merchandise_order () {
-        JFrame merch_order = new JFrame("Merchandise Order");
-        JPanel labels_text = new JPanel();
-        JPanel buttons = new JPanel();
-        JLabel merch_name = new JLabel("Merchandise Item Name:");
-        merch_name.setFont(new Font("Calibri", Font.PLAIN, 30));
-        JTextField merch_name_input = new JTextField();
-        merch_name_input.setFont(new Font("Calibri", Font.PLAIN, 30));
-        JButton back_home = new JButton("Back to Home");
-        back_home.setFont(new Font("Calibri", Font.PLAIN, 30));
-        back_home.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                merch_order.dispose();
+                user_concert_info.dispose();
                 goToCustomerHome();
             }
         });
@@ -477,91 +475,66 @@ public class UI {
         submit.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                merch_order.dispose();
-                //TODO:add confirmation status, tell how much charged to user account
+                String user_name = user_id_input.getText().trim();
+                String artist_name = tour_name_input.getText().trim();
+                String date = date_input.getText().trim();
+                String ticket_section = ticket_section_input.getText().trim();
+                String quantity = quantity_input.getText().trim();
+                user_concert_info.dispose();
+                //TODO: query
             }
         });
 
-        labels_text.setLayout(new BoxLayout(labels_text, BoxLayout.PAGE_AXIS));
-        buttons.setLayout(new GridLayout());
-        labels_text.add(merch_name);
-        labels_text.add(merch_name_input);
-        buttons.add(back_home);
-        buttons.add(submit);
-        merch_order.add(labels_text, BorderLayout.PAGE_START);
-        merch_order.add(buttons, BorderLayout.PAGE_END);
-        merch_order.setSize(500, 500);
-        merch_order.setVisible(true);
-    }
+        label_and_text.setLayout(new BoxLayout(label_and_text, BoxLayout.PAGE_AXIS));
+        buttons_field.setLayout(new FlowLayout());
 
-    // TICKET ORDER FORM
-    public void ticket_order () {
-        JFrame ticket_order = new JFrame("Ticket Order");
-        JPanel labels_text = new JPanel();
-        JPanel buttons = new JPanel();
-        JLabel ticket_name = new JLabel("Ticket Type:");
-        ticket_name.setFont(new Font("Calibri", Font.PLAIN, 30));
-        JTextField ticket_name_input = new JTextField();
-        ticket_name_input.setFont(new Font("Calibri", Font.PLAIN, 30));
-        JButton back_home = new JButton("Back to Home");
-        back_home.setFont(new Font("Calibri", Font.PLAIN, 30));
-        back_home.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                ticket_order.dispose();
-                goToCustomerHome();
-            }
-        });
-        JButton submit = new JButton("Submit Info");
-        submit.setFont(new Font("Calibri", Font.PLAIN, 30));
-        submit.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                String ticket_type = ticket_name_input.getText().trim();
-                ticket_order.dispose();
-                //TODO:add confirmation status, tell how much charged to user account (if worked)
-            }
-        });
-
-        labels_text.setLayout(new BoxLayout(labels_text, BoxLayout.PAGE_AXIS));
-        buttons.setLayout(new GridLayout());
-        labels_text.add(ticket_name);
-        labels_text.add(ticket_name_input);
-        buttons.add(back_home);
-        buttons.add(submit);
-        ticket_order.add(labels_text, BorderLayout.PAGE_START);
-        ticket_order.add(buttons, BorderLayout.PAGE_END);
-        ticket_order.setSize(500, 500);
-        ticket_order.setVisible(true);
+        label_and_text.add(user_id);
+        label_and_text.add(user_id_input);
+        label_and_text.add(tour_name);
+        label_and_text.add(tour_name_input);
+        label_and_text.add(date);
+        label_and_text.add(date_input);
+        label_and_text.add(date);
+        label_and_text.add(date_input);
+        label_and_text.add(ticket_section);
+        label_and_text.add(ticket_section_input);
+        label_and_text.add(quantity);
+        label_and_text.add(quantity_input);
+        buttons_field.add(back_home);
+        buttons_field.add(submit);
+        user_concert_info.add(label_and_text, BorderLayout.PAGE_START);
+        user_concert_info.add(buttons_field, BorderLayout.PAGE_END);
+        user_concert_info.setSize(1300, 600);
+        user_concert_info.setVisible(true);
     }
 
     //ORGANIZER HOME PAGE
     public void goToOrganizerHome () {
         // Setting Home Screen
-        JFrame home = new JFrame("Customer Home Screen");
+        JFrame home = new JFrame("Organizer Home Screen");
         home.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         home.setSize(1000,800);
         // Buttons to indicate which action the user would like to do on the database
-        JButton add_artist = new JButton("Add New Artist for Concert");
-        add_artist.setFont(new Font("Calibri", Font.PLAIN, 30));
-        add_artist.addActionListener(new ActionListener() {
+        JButton new_merch = new JButton("New Merchandise for Concert");
+        new_merch.setFont(new Font("Calibri", Font.PLAIN, 40));
+        new_merch.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 home.dispose();
-                inputConcertArtistInfo();
+                inputTourMerchInfo();
             }
         });
-        JButton add_song_setlist = new JButton("Mark Up / Down Prices for Tickets & Merchandise Based on Concert");
-        add_song_setlist.setFont(new Font("Calibri", Font.PLAIN, 30));
-        add_song_setlist.addActionListener(new ActionListener() {
+        JButton cancel_concert = new JButton("Cancel Concert");
+        cancel_concert.setFont(new Font("Calibri", Font.PLAIN, 40));
+        cancel_concert.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 home.dispose();
-                inputConcertandPercentage();
+                inputConcertToDelete();
             }
         });
         JButton customer_organizer = new JButton("Back to Customer/Organizer Screen");
-        customer_organizer.setFont(new Font("Calibri", Font.PLAIN, 30));
+        customer_organizer.setFont(new Font("Calibri", Font.PLAIN, 40));
         customer_organizer.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -569,9 +542,10 @@ public class UI {
                 customerOrOrganizer();
             }
         });
+
         // Add buttons to home screen
-        home.add(add_artist);
-        home.add(add_song_setlist);
+        home.add(new_merch);
+        home.add(cancel_concert);
         home.add(customer_organizer);
         // setting layout
         home.setLayout(new GridLayout(3, 1));
@@ -579,28 +553,36 @@ public class UI {
         home.setVisible(true);
     }
 
-    // QUERY #5
-    // ADD NEW ARTIST TO CONCERT
-    public void inputConcertArtistInfo() {
+    // QUERY #6
+    // NEW MERCHANDISE ITEM FOR SPECIFIC CONCERT
+    public void inputTourMerchInfo() {
         JFrame concert_artist_info = new JFrame();
         JPanel labels_and_text = new JPanel();
         JPanel buttonsField = new JPanel();
-        JLabel artist = new JLabel("Concert Artist: ");
-        artist.setFont(new Font("Calibri", Font.PLAIN, 30));
-        JLabel city = new JLabel("Concert City: ");
-        city.setFont(new Font("Calibri", Font.PLAIN, 30));
-        JLabel time = new JLabel("Concert Time: ");
-        time.setFont(new Font("Calibri", Font.PLAIN, 30));
-        JLabel new_artist = new JLabel("New Artist: ");
-        new_artist.setFont(new Font("Calibri", Font.PLAIN, 30));
-        JTextField artist_input = new JTextField();
-        artist_input.setFont(new Font("Calibri", Font.PLAIN, 30));
-        JTextField city_input = new JTextField();
-        city_input.setFont(new Font("Calibri", Font.PLAIN, 30));
-        JTextField time_input = new JTextField();
-        time_input.setFont(new Font("Calibri", Font.PLAIN, 30));
-        JTextField new_artist_input = new JTextField();
-        new_artist_input.setFont(new Font("Calibri", Font.PLAIN, 30));
+        JLabel tour_name = new JLabel("Tour Name: ");
+        tour_name.setFont(new Font("Calibri", Font.PLAIN, 30));
+        JLabel date = new JLabel("Date of Concert (in yyyy-mm-dd format): ");
+        date.setFont(new Font("Calibri", Font.PLAIN, 30));
+        JLabel item_name = new JLabel("Merchandise Item: ");
+        item_name.setFont(new Font("Calibri", Font.PLAIN, 30));
+        JLabel category = new JLabel("Merchandise Category (): ");
+        category.setFont(new Font("Calibri", Font.PLAIN, 30));
+        JLabel price = new JLabel("Merchandise Price (no dollar sign, just number): ");
+        price.setFont(new Font("Calibri", Font.PLAIN, 30));
+        JLabel quantity = new JLabel("Quantity: ");
+        quantity.setFont(new Font("Calibri", Font.PLAIN, 30));
+        JTextField tour_name_input = new JTextField();
+        tour_name_input.setFont(new Font("Calibri", Font.PLAIN, 30));
+        JTextField date_input = new JTextField();
+        date_input.setFont(new Font("Calibri", Font.PLAIN, 30));
+        JTextField item_name_input = new JTextField();
+        item_name_input.setFont(new Font("Calibri", Font.PLAIN, 30));
+        JTextField category_input = new JTextField();
+        category_input.setFont(new Font("Calibri", Font.PLAIN, 30));
+        JTextField price_input = new JTextField();
+        price_input.setFont(new Font("Calibri", Font.PLAIN, 30));
+        JTextField quantity_input = new JTextField();
+        quantity_input.setFont(new Font("Calibri", Font.PLAIN, 30));
         JButton back_home = new JButton("Back to Home");
         back_home.setFont(new Font("Calibri", Font.PLAIN, 30));
         back_home.addActionListener(new ActionListener() {
@@ -615,56 +597,52 @@ public class UI {
         submit.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                String tour_name = tour_name_input.getText().trim();
+                String date = date_input.getText().trim();
+                String item_name = item_name_input.getText().trim();
+                String category = category_input.getText().trim();
+                String price = price_input.getText().trim();
+                String quantity = quantity_input.getText().trim();
                 concert_artist_info.dispose();
                 //TODO: add confirmation that artist has been added to the concert, print out concert details
             }
         });
         labels_and_text.setLayout(new BoxLayout(labels_and_text, BoxLayout.PAGE_AXIS));
         buttonsField.setLayout(new GridLayout());
-        labels_and_text.add(artist);
-        labels_and_text.add(artist_input);
-        labels_and_text.add(artist_input);
-        labels_and_text.add(city);
-        labels_and_text.add(city_input);
-        labels_and_text.add(time);
-        labels_and_text.add(time_input);
-        labels_and_text.add(new_artist);
-        labels_and_text.add(new_artist_input);
+        labels_and_text.add(tour_name);
+        labels_and_text.add(tour_name_input);
+        labels_and_text.add(date);
+        labels_and_text.add(date_input);
+        labels_and_text.add(item_name);
+        labels_and_text.add(item_name_input);
+        labels_and_text.add(category);
+        labels_and_text.add(category_input);
+        labels_and_text.add(price);
+        labels_and_text.add(price_input);
+        labels_and_text.add(quantity);
+        labels_and_text.add(quantity_input);
         buttonsField.add(back_home);
         buttonsField.add(submit);
         concert_artist_info.add(labels_and_text, BorderLayout.PAGE_START);
         concert_artist_info.add(buttonsField, BorderLayout.PAGE_END);
-        concert_artist_info.setSize(500, 500);
+        concert_artist_info.setSize(1000, 800);
         concert_artist_info.setVisible(true);
     }
 
-    // QUERY #6
-    // MARK UP OR MARK DOWN PURCHASED ITEMS
-    // INPUT CONCERT INFORMATION
-    public void inputConcertandPercentage () {
-        JFrame concert_info = new JFrame();
+    // QUERY #7: CANCEL CONCERT
+    public void inputConcertToDelete() {
+        JFrame concert_info = new JFrame("Concert Information");
         JPanel labels_and_text = new JPanel();
-        JPanel buttons = new JPanel();
-        JLabel artist = new JLabel("Artist Name:");
-        artist.setFont(new Font("Calibri", Font.PLAIN, 30));
-        JLabel city = new JLabel("Concert City:");
-        city.setFont(new Font("Calibri", Font.PLAIN, 30));
-        JLabel date = new JLabel("Concert Date:");
+        JPanel buttonsField = new JPanel();
+        JLabel tour_name = new JLabel("Tour Name: ");
+        tour_name.setFont(new Font("Calibri", Font.PLAIN, 30));
+        JTextField tour_name_input = new JTextField();
+        tour_name_input.setFont(new Font("Calibri", Font.PLAIN, 30));
+        JLabel date = new JLabel("Date of Concert (in yyyy-mm-dd format):");
         date.setFont(new Font("Calibri", Font.PLAIN, 30));
-        JLabel time = new JLabel("Time of Concert (military time):");
-        time.setFont(new Font("Calibri", Font.PLAIN, 30));
-        JLabel percentage = new JLabel("Percentage (just the number):");
-        percentage.setFont(new Font("Calibri", Font.PLAIN, 30));
-        JTextField artist_input = new JTextField();
-        artist_input.setFont(new Font("Calibri", Font.PLAIN, 30));
-        JTextField city_input = new JTextField();
-        city_input.setFont(new Font("Calibri", Font.PLAIN, 30));
         JTextField date_input = new JTextField();
         date_input.setFont(new Font("Calibri", Font.PLAIN, 30));
-        JTextField time_input = new JTextField();
-        time_input.setFont(new Font("Calibri", Font.PLAIN, 30));
-        JTextField percentage_input = new JTextField();
-        percentage_input.setFont(new Font("Calibri", Font.PLAIN, 30));
+
         JButton back_home = new JButton("Back to Home");
         back_home.setFont(new Font("Calibri", Font.PLAIN, 30));
         back_home.addActionListener(new ActionListener() {
@@ -679,34 +657,21 @@ public class UI {
         submit.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                String artist_name = artist_input.getText().trim();
-                String city_name = city_input.getText().trim();
-                String date_text = date_input.getText().trim();
-                String time_text = time_input.getText().trim();
-                int percentage_text = Integer.parseInt(percentage_input.getText().trim());
                 concert_info.dispose();
-                //TODO: get confirmation if the concert is valid
+                //TODO: add confirmation that artist has been added to the concert, print out concert details
             }
         });
-
         labels_and_text.setLayout(new BoxLayout(labels_and_text, BoxLayout.PAGE_AXIS));
-        buttons.setLayout(new GridLayout());
-
-        labels_and_text.add(artist);
-        labels_and_text.add(artist_input);
-        labels_and_text.add(city);
-        labels_and_text.add(city_input);
+        buttonsField.setLayout(new GridLayout());
+        labels_and_text.add(tour_name);
+        labels_and_text.add(tour_name_input);
         labels_and_text.add(date);
         labels_and_text.add(date_input);
-        labels_and_text.add(time);
-        labels_and_text.add(time_input);
-        labels_and_text.add(percentage);
-        labels_and_text.add(percentage_input);
-        buttons.add(back_home);
-        buttons.add(submit);
+        buttonsField.add(back_home);
+        buttonsField.add(submit);
         concert_info.add(labels_and_text, BorderLayout.PAGE_START);
-        concert_info.add(buttons, BorderLayout.PAGE_END);
-        concert_info.setSize(500, 500);
+        concert_info.add(buttonsField, BorderLayout.PAGE_END);
+        concert_info.setSize(800, 500);
         concert_info.setVisible(true);
     }
 

@@ -3,14 +3,27 @@ import javax.swing.border.Border;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.math.BigInteger;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.CallableStatement;
+import java.sql.Date;
 import java.util.Locale;
+import java.math.BigDecimal;
 
 public class UI {
+    String connectionUrl ="jdbc:sqlserver://localhost;"
+    + "database=tours;"
+    + "user=neha;"
+    + "password=tourconcert;"
+    + "encrypt=true;"
+    + "trustServerCertificate=true;"
+    + "loginTimeout=15;";
+
     // CUSTOMER OR ORGANIZER PAGE
     public void customerOrOrganizer () {
         //setting up the frame and the buttonss
@@ -119,8 +132,7 @@ public class UI {
         home.setVisible(true);
     }
 
-    // QUERY #1:
-    // NEW OR EXISTING USER ACCESSING INFORMATION
+    // QUERY #1:NEW OR EXISTING USER ACCESSING INFORMATION
     // CHOOSING NEW OR EXISTING USER
     public void new_or_existing_user () {
         //frame and buttons
@@ -181,7 +193,7 @@ public class UI {
             public void actionPerformed(ActionEvent e) {
                 String name_text = name_input.getText().trim();
                 new_user.dispose();
-                //TODO: tell user their user id
+                new_user_query(name_text);
             }
         });
 
@@ -201,12 +213,81 @@ public class UI {
         new_user.setVisible(true);
     }
 
+    public void new_user_query(String name) {
+        try {
+            Connection connection = DriverManager.getConnection(connectionUrl);
+            CallableStatement findSongs = connection.prepareCall("{call add_NewUser(?)}");
+            findSongs.setString(1, name);
+            int rowsAffected = findSongs.executeUpdate();
+            if (rowsAffected > 0) {
+                confirmationCustomer();
+            }
+            else {
+                usernameInvalid();
+            }
+        }
+        catch (SQLException s) {
+            usernameInvalid();
+            s.printStackTrace();
+        } 
+    }
+
+    public void confirmationCustomer () {
+        JFrame confirmation = new JFrame("Action Confirmation");
+        JPanel labels = new JPanel();
+        JPanel buttons = new JPanel();
+        JLabel complete = new JLabel("Your action has been complete!");
+        complete.setFont(new Font("Calibri", Font.PLAIN, 30));
+        JButton back_to_home = new JButton("Back to Home");
+        back_to_home.setFont(new Font("Calibri", Font.PLAIN, 30));
+        back_to_home.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                confirmation.dispose();
+                goToCustomerHome();
+            }
+        });
+        labels.setLayout(new BoxLayout(labels, BoxLayout.PAGE_AXIS));
+        buttons.setLayout(new FlowLayout());
+        labels.add(complete);
+        buttons.add(back_to_home);
+        confirmation.add(labels, BorderLayout.PAGE_START);
+        confirmation.add(buttons, BorderLayout.PAGE_END);
+        confirmation.setSize(500, 300);
+        confirmation.setVisible(true);
+    }
+
+    public void usernameInvalid () {
+        JFrame invalid_info = new JFrame("Invalid Information");
+        JPanel labels = new JPanel();
+        JPanel buttons = new JPanel();
+        JLabel invalid = new JLabel("Username already taken. Try again.");
+        invalid.setFont(new Font("Calibri", Font.PLAIN, 30));
+        JButton back_to_home = new JButton("Back to Home");
+        back_to_home.setFont(new Font("Calibri", Font.PLAIN, 30));
+        back_to_home.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                invalid_info.dispose();
+                goToCustomerHome();
+            }
+        });
+        labels.setLayout(new BoxLayout(labels, BoxLayout.PAGE_AXIS));
+        buttons.setLayout(new FlowLayout());
+        labels.add(invalid);
+        buttons.add(back_to_home);
+        invalid_info.add(labels, BorderLayout.PAGE_START);
+        invalid_info.add(buttons, BorderLayout.PAGE_END);
+        invalid_info.setSize(300, 300);
+        invalid_info.setVisible(true);
+    }
+
     // EXISTING USER INFORMATION
     public void existing_user_info () {
         JFrame existing_user = new JFrame("Existing User Info");
         JPanel labels_and_text = new JPanel();
         JPanel buttons = new JPanel();
-        JLabel user_id = new JLabel("User ID: ");
+        JLabel user_id = new JLabel("Username: ");
         JTextField user_id_input = new JTextField();
         user_id.setFont(new Font("Calibri", Font.PLAIN, 30));
         user_id_input.setFont(new Font("Calibri", Font.PLAIN, 30));
@@ -226,7 +307,7 @@ public class UI {
             public void actionPerformed(ActionEvent e) {
                 String user_input_text = user_id_input.getText().trim();
                 existing_user.dispose();
-                // TODO: add function to provide user data like balance
+                existing_user_query(user_input_text);
             }
         });
 
@@ -241,6 +322,80 @@ public class UI {
         existing_user.setSize(500, 500);
         existing_user.setVisible(true);
 
+    }
+
+    public void existing_user_query(String user_input) {
+        try {
+            Connection connection = DriverManager.getConnection(connectionUrl);
+            CallableStatement existingUser = connection.prepareCall("{call checkUsers(?)}");
+            existingUser.setString(1, user_input);
+            ResultSet resultSet = existingUser.executeQuery();
+            existing_user_info(resultSet);
+        }
+        catch (SQLException s) {
+
+            s.printStackTrace();
+        } 
+    }
+
+    public void existing_user_info(ResultSet resultSet) {
+        StringBuilder b = new StringBuilder();
+        try {
+            while (resultSet.next()) {
+                b.append("<html>Username: " + resultSet.getString(1) + "<br>Balance: " + resultSet.getString(2) + "<br>Number of Merch Purchased: " + resultSet.getString(3) + "<br>Number of Tickets Purchased: " + resultSet.getString(4) + "</html>");
+            }
+        }
+        catch (SQLException s) {
+            s.printStackTrace();
+        }
+        JFrame frame = new JFrame("Existing User Information");
+        JPanel label = new JPanel();
+        JPanel buttons_field = new JPanel();
+        JLabel songs = new JLabel();
+        songs.setText(b.toString());
+        songs.setFont(new Font("Calibri", Font.PLAIN, 30));
+        JButton back_home = new JButton("Back to Home");
+        back_home.setFont(new Font("Calibri", Font.PLAIN, 30));
+        back_home.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                frame.dispose();
+                goToCustomerHome();
+            }
+        });
+        label.setLayout(new BoxLayout(label, BoxLayout.PAGE_AXIS));
+        buttons_field.setLayout(new GridLayout());
+        label.add(songs);
+        buttons_field.add(back_home);
+        frame.add(label, BorderLayout.PAGE_START);
+        frame.add(buttons_field, BorderLayout.PAGE_END);
+        frame.setSize(1000, 500);
+        frame.setVisible(true);
+    }
+
+    public void nonexistentUser () {
+        JFrame invalid_info = new JFrame("Invalid Information");
+        JPanel labels = new JPanel();
+        JPanel buttons = new JPanel();
+        JLabel invalid = new JLabel("Username does not exist. Try again.");
+        invalid.setFont(new Font("Calibri", Font.PLAIN, 30));
+        JButton back_to_home = new JButton("Back to Home");
+        back_to_home.setFont(new Font("Calibri", Font.PLAIN, 30));
+        back_to_home.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                invalid_info.dispose();
+                goToCustomerHome();
+            }
+        });
+        labels.setLayout(new BoxLayout(labels, BoxLayout.PAGE_AXIS));
+        buttons.setLayout(new GridLayout());
+        labels.add(invalid);
+        buttons.add(back_to_home);
+        invalid_info.add(labels, BorderLayout.PAGE_START);
+        invalid_info.add(buttons, BorderLayout.PAGE_END);
+        invalid_info.setSize(500, 300);
+        invalid_info.setVisible(true);
     }
 
     // QUERY #2: FIND MY SONGS
@@ -274,7 +429,7 @@ public class UI {
                 String tour_name = tour_name_input.getText().trim();
                 String date_text = date_input.getText().trim();
                 concertinfo.dispose();
-                //TODO: print out song info
+                findSongsQuery(tour_name, date_text);
             }
         });
 
@@ -291,6 +446,61 @@ public class UI {
         concertinfo.add(buttons_field, BorderLayout.PAGE_END);
         concertinfo.setSize(800, 500);
         concertinfo.setVisible(true);
+    }
+
+    //RUN FIND SONGS STORED PROCEDURE
+    public void findSongsQuery(String tour_name, String date_string) {
+        try {
+            Connection connection = DriverManager.getConnection(connectionUrl);
+            CallableStatement findSongs = connection.prepareCall("{call find_setlist2(?, ?)}");
+            findSongs.setString(1, tour_name);
+            Date date = Date.valueOf(date_string);
+            findSongs.setDate(2, date);
+            ResultSet resultSet = findSongs.executeQuery();
+            printSongs(resultSet);
+        }
+        catch (SQLException s) {
+            s.printStackTrace();
+        } 
+        
+
+    }
+
+    public void printSongs (ResultSet resultSet) {
+        StringBuilder b = new StringBuilder();
+        String lineSeparator = System.lineSeparator();
+        try {
+            b.append("<html>");
+            while (resultSet.next()) {
+                b.append("Song Name: " + resultSet.getString(1) + "<br>Artist name: "+ resultSet.getString(2) + "<br>Album name: " + resultSet.getString(3) + "</html>");
+            }
+            b.append("</html>");
+        }
+        catch (SQLException s) {
+            s.printStackTrace();
+        }
+        JFrame frame = new JFrame("SetList");
+        JPanel label = new JPanel();
+        JPanel buttons_field = new JPanel();
+        JLabel songs = new JLabel(b.toString());
+        songs.setFont(new Font("Calibri", Font.PLAIN, 30));
+        JButton back_home = new JButton("Back to Home");
+        back_home.setFont(new Font("Calibri", Font.PLAIN, 30));
+        back_home.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                frame.dispose();
+                goToCustomerHome();
+            }
+        });
+        label.setLayout(new BoxLayout(label, BoxLayout.PAGE_AXIS));
+        buttons_field.setLayout(new GridLayout());
+        label.add(songs);
+        buttons_field.add(back_home);
+        frame.add(label, BorderLayout.PAGE_START);
+        frame.add(buttons_field, BorderLayout.PAGE_END);
+        frame.setSize(1000, 500);
+        frame.setVisible(true);
     }
 
     // QUERY #3: ARTISTS TOURING NEAR ME
@@ -335,7 +545,7 @@ public class UI {
                 String city_name = city_input.getText().trim();
                 String state_name = state_input.getText().trim();
                 concertinfo.dispose();
-                //TODO: print out artists, dates, number of available tickets
+                find_artist_query(start_date_text, end_date_text, city_name, state_name);
             }
         });
 
@@ -358,27 +568,80 @@ public class UI {
         concertinfo.setVisible(true);
     }
 
+    public void find_artist_query (String start_date, String end_date, String city, String state) {
+        try {
+            Connection connection = DriverManager.getConnection(connectionUrl);
+            CallableStatement findArtists = connection.prepareCall("{call find_artist(?, ?, ?, ?)}");
+            Date start_date_date = Date.valueOf(start_date);
+            findArtists.setDate(1, start_date_date);
+            Date end_date_date = Date.valueOf(end_date);
+            findArtists.setDate(2, end_date_date);
+            findArtists.setString(3, city);
+            findArtists.setString(4, state);
+            ResultSet resultSet = findArtists.executeQuery();
+            printArtistTourDate(resultSet);
+        }
+        catch (SQLException s) {
+            s.printStackTrace();
+        } 
+    }
+
+    public void printArtistTourDate (ResultSet resultSet) {
+        StringBuilder b = new StringBuilder();
+        try {
+            b.append("<html>");
+            while (resultSet.next()) {
+                b.append("<br>Artist Name: " + resultSet.getString(1) + "<br>Tour name: " + resultSet.getString(2) + "<br>Date: " + resultSet.getString(3));
+            }
+            b.append("</html>");
+        }
+        catch (SQLException s) {
+            s.printStackTrace();
+        }
+        JFrame frame = new JFrame("Artists, Tours, & Dates");
+        JPanel label = new JPanel();
+        JPanel buttons_field = new JPanel();
+        JLabel songs = new JLabel(b.toString());
+        songs.setFont(new Font("Calibri", Font.PLAIN, 30));
+        JButton back_home = new JButton("Back to Home");
+        back_home.setFont(new Font("Calibri", Font.PLAIN, 30));
+        back_home.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                frame.dispose();
+                goToCustomerHome();
+            }
+        });
+        label.setLayout(new BoxLayout(label, BoxLayout.PAGE_AXIS));
+        buttons_field.setLayout(new GridLayout());
+        label.add(songs);
+        buttons_field.add(back_home);
+        frame.add(label, BorderLayout.PAGE_START);
+        frame.add(buttons_field, BorderLayout.PAGE_END);
+        frame.setSize(1000, 500);
+        frame.setVisible(true);
+    }
+
+
     // QUERY #4: PURCHASE MERCHANDISE
     public void inputUserandConcertInfoMerch() {
         // define objects (JFrame, panels, buttons, labels, textfields)
         JFrame user_concert_info = new JFrame("User, Concert, and Merch Information");
         JPanel label_and_text = new JPanel();
         JPanel buttons_field = new JPanel();
-        JLabel user_id = new JLabel("User ID:");
+        JLabel user_id = new JLabel("User Name:");
         user_id.setFont(new Font("Calibri", Font.PLAIN, 30));
         JTextField user_id_input = new JTextField();
         user_id_input.setFont(new Font("Calibri", Font.PLAIN, 30));
-        JLabel tour_name = new JLabel("Concert Artist:");
+        JLabel tour_name = new JLabel("Tour name:");
         tour_name.setFont(new Font("Calibri", Font.PLAIN, 30));
         JTextField tour_name_input = new JTextField();
         tour_name_input.setFont(new Font("Calibri", Font.PLAIN, 30));
-        JLabel date = new JLabel("Concert Date (in mm:dd:yyyy format):");
+        JLabel date = new JLabel("Concert Date (in yyyy-mm-dd format):");
         date.setFont(new Font("Calibri", Font.PLAIN, 30));
         JTextField date_input = new JTextField();
         date_input.setFont(new Font("Calibri", Font.PLAIN, 30));
-        JLabel merchandise_item = new JLabel("Merchandise Item (shirt, hoodie, hat,\n" +
-                "pants, keychain, poster, other clothing,\n" +
-                "other item):");
+        JLabel merchandise_item = new JLabel("Merchandise Item:");
         merchandise_item.setFont(new Font("Calibri", Font.PLAIN, 30));
         JTextField merchandise_item_input = new JTextField();
         merchandise_item_input.setFont(new Font("Calibri", Font.PLAIN, 30));
@@ -401,12 +664,12 @@ public class UI {
             @Override
             public void actionPerformed(ActionEvent e) {
                 String user_name = user_id_input.getText().trim();
-                String artist_name = tour_name_input.getText().trim();
+                String tour_name = tour_name_input.getText().trim();
                 String date = date_input.getText().trim();
                 String merchandise_item = merchandise_item_input.getText().trim();
                 String quantity = quantity_input.getText().trim();
                 user_concert_info.dispose();
-                //TODO: query
+                purchaseMerchandiseQuery(user_name, tour_name, date, merchandise_item, quantity);
             }
         });
 
@@ -433,6 +696,94 @@ public class UI {
         user_concert_info.setVisible(true);
     }
 
+    //Runs purchase merchandise stored procedure 
+    public void purchaseMerchandiseQuery (String username, String tourname, String date, String merchandise_item, String quantity) {
+        try {
+            Connection connection = DriverManager.getConnection(connectionUrl);
+            CallableStatement buy_merch = connection.prepareCall("{call buy_merchandise(?, ?, ?, ?, ?)}");
+            buy_merch.setString(1, username);
+            buy_merch.setString(2, tourname);
+            Date date_date = Date.valueOf(date);
+            buy_merch.setDate(3, date_date);
+            buy_merch.setString(4, merchandise_item);
+            Integer quantity_int = Integer.valueOf(quantity);
+            buy_merch.setInt(5, quantity_int);
+            boolean execute = buy_merch.execute();
+            CallableStatement checkBalance = connection.prepareCall("{call checkUsers(?)}");
+            checkBalance.setString(1, username);
+            ResultSet resultSet = checkBalance.executeQuery();
+            userInfoMerchandise(resultSet);
+        }
+        catch (SQLException s) {
+            invalidInformation();
+            s.printStackTrace();
+        } 
+    }
+
+    // Frame for printing out that there was invalid information 
+    public void invalidInformation () {
+        JFrame invalid_info = new JFrame("Invalid Information");
+        JPanel labels = new JPanel();
+        JPanel buttons = new JPanel();
+        JLabel invalid = new JLabel("Invalid information! Please try again.");
+        invalid.setFont(new Font("Calibri", Font.PLAIN, 30));
+        JButton back_to_home = new JButton("Back to Home");
+        back_to_home.setFont(new Font("Calibri", Font.PLAIN, 30));
+        back_to_home.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                invalid_info.dispose();
+                goToCustomerHome();
+            }
+            
+        });
+        labels.setLayout(new BoxLayout(labels, BoxLayout.PAGE_AXIS));
+        buttons.setLayout(new GridLayout());
+        labels.add(invalid);
+        buttons.add(back_to_home);
+        invalid_info.add(labels, BorderLayout.PAGE_START);
+        invalid_info.add(buttons, BorderLayout.PAGE_END);
+        invalid_info.setSize(300, 300);
+        invalid_info.setVisible(true);
+    }
+
+    //Frame for printing out user information 
+    public void userInfoMerchandise (ResultSet resultSet) {
+        StringBuilder b = new StringBuilder();
+        try {
+            b.append("<html>");
+            while (resultSet.next()) {
+                b.append("<br>Username: " + resultSet.getString(1) + "<br>Balance: " + resultSet.getString(2) + "<br>Merch Purchased: " + resultSet.getString(3) + "<br>Tickets Purchased: " + resultSet.getString(4));
+            }
+            b.append("</html>");
+        }
+        catch (SQLException s) {
+            s.printStackTrace();
+        }
+        JFrame frame = new JFrame("SetList");
+        JPanel label = new JPanel();
+        JPanel buttons_field = new JPanel();
+        JLabel songs = new JLabel(b.toString());
+        songs.setFont(new Font("Calibri", Font.PLAIN, 30));
+        JButton back_home = new JButton("Back to Home");
+        back_home.setFont(new Font("Calibri", Font.PLAIN, 30));
+        back_home.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                frame.dispose();
+                goToCustomerHome();
+            }
+        });
+        label.setLayout(new BoxLayout(label, BoxLayout.PAGE_AXIS));
+        buttons_field.setLayout(new GridLayout());
+        label.add(songs);
+        buttons_field.add(back_home);
+        frame.add(label, BorderLayout.PAGE_START);
+        frame.add(buttons_field, BorderLayout.PAGE_END);
+        frame.setSize(1000, 500);
+        frame.setVisible(true);
+    }
+
     // QUERY #5: PURCHASE TICKETS
     public void inputUserandConcertInfoTickets() {
         // define objects (JFrame, panels, buttons, labels, textfields)
@@ -443,11 +794,11 @@ public class UI {
         user_id.setFont(new Font("Calibri", Font.PLAIN, 30));
         JTextField user_id_input = new JTextField();
         user_id_input.setFont(new Font("Calibri", Font.PLAIN, 30));
-        JLabel tour_name = new JLabel("Concert Artist:");
+        JLabel tour_name = new JLabel("Tour name:");
         tour_name.setFont(new Font("Calibri", Font.PLAIN, 30));
         JTextField tour_name_input = new JTextField();
         tour_name_input.setFont(new Font("Calibri", Font.PLAIN, 30));
-        JLabel date = new JLabel("Concert Date (in mm:dd:yyyy format):");
+        JLabel date = new JLabel("Concert Date (in yyyy-mm-dd format):");
         date.setFont(new Font("Calibri", Font.PLAIN, 30));
         JTextField date_input = new JTextField();
         date_input.setFont(new Font("Calibri", Font.PLAIN, 30));
@@ -481,7 +832,7 @@ public class UI {
                 String ticket_section = ticket_section_input.getText().trim();
                 String quantity = quantity_input.getText().trim();
                 user_concert_info.dispose();
-                //TODO: query
+                purchaseTicketsQuery(user_name, artist_name, date, ticket_section, quantity);
             }
         });
 
@@ -507,6 +858,69 @@ public class UI {
         user_concert_info.setSize(1300, 600);
         user_concert_info.setVisible(true);
     }
+
+    //Runs purchase merchandise stored procedure 
+    public void purchaseTicketsQuery (String username, String tourname, String date, String ticket_section, String quantity) {
+        try {
+            Connection connection = DriverManager.getConnection(connectionUrl);
+            CallableStatement buyTickets = connection.prepareCall("{call buy_tickets(?, ?, ?, ?, ?)}");
+            buyTickets.setString(1, username);
+            buyTickets.setString(2, tourname);
+            Date date_date = Date.valueOf(date);
+            buyTickets.setDate(3, date_date);
+            buyTickets.setString(4, ticket_section);
+            Integer quantity_int = Integer.valueOf(quantity);
+            buyTickets.setInt(5, quantity_int);
+            boolean execute = buyTickets.execute();
+            CallableStatement checkBalance = connection.prepareCall("{call checkUsers(?)}");
+            checkBalance.setString(1, username);
+            ResultSet resultSet = checkBalance.executeQuery();
+            userInfoTickets(resultSet);
+            
+        }
+        catch (SQLException s) {
+            invalidInformation();
+            s.printStackTrace();
+        } 
+    }
+
+    //Frame for printing out user information 
+    public void userInfoTickets (ResultSet resultSet) {
+        StringBuilder b = new StringBuilder();
+        try {
+            b.append("<html>");
+            while (resultSet.next()) {
+                b.append("<br>Username: " + resultSet.getString(1) + "<br>Balance: " + resultSet.getString(2) + "<br>Merch Purchased: " + resultSet.getString(3) + "<br>Tickets Purchased: " + resultSet.getString(4));
+            }
+            b.append("</html>");
+        }
+        catch (SQLException s) {
+            s.printStackTrace();
+        }
+        JFrame frame = new JFrame("User Info");
+        JPanel label = new JPanel();
+        JPanel buttons_field = new JPanel();
+        JLabel songs = new JLabel(b.toString());
+        songs.setFont(new Font("Calibri", Font.PLAIN, 30));
+        JButton back_home = new JButton("Back to Home");
+        back_home.setFont(new Font("Calibri", Font.PLAIN, 30));
+        back_home.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                frame.dispose();
+                goToCustomerHome();
+            }
+        });
+        label.setLayout(new BoxLayout(label, BoxLayout.PAGE_AXIS));
+        buttons_field.setLayout(new GridLayout());
+        label.add(songs);
+        buttons_field.add(back_home);
+        frame.add(label, BorderLayout.PAGE_START);
+        frame.add(buttons_field, BorderLayout.PAGE_END);
+        frame.setSize(1000, 500);
+        frame.setVisible(true);
+    }
+
 
     //ORGANIZER HOME PAGE
     public void goToOrganizerHome () {
@@ -565,9 +979,9 @@ public class UI {
         date.setFont(new Font("Calibri", Font.PLAIN, 30));
         JLabel item_name = new JLabel("Merchandise Item: ");
         item_name.setFont(new Font("Calibri", Font.PLAIN, 30));
-        JLabel category = new JLabel("Merchandise Category (): ");
+        JLabel category = new JLabel("Merchandise Category (shirt, hoodie, hat, pants, keychain, poster, other clothing, other item): ");
         category.setFont(new Font("Calibri", Font.PLAIN, 30));
-        JLabel price = new JLabel("Merchandise Price (no dollar sign, just number): ");
+        JLabel price = new JLabel("Merchandise Price (no dollar sign, just number with no decimal points): ");
         price.setFont(new Font("Calibri", Font.PLAIN, 30));
         JLabel quantity = new JLabel("Quantity: ");
         quantity.setFont(new Font("Calibri", Font.PLAIN, 30));
@@ -604,7 +1018,7 @@ public class UI {
                 String price = price_input.getText().trim();
                 String quantity = quantity_input.getText().trim();
                 concert_artist_info.dispose();
-                //TODO: add confirmation that artist has been added to the concert, print out concert details
+                new_merchandise_query(tour_name, date, item_name, category, price, quantity);
             }
         });
         labels_and_text.setLayout(new BoxLayout(labels_and_text, BoxLayout.PAGE_AXIS));
@@ -628,6 +1042,84 @@ public class UI {
         concert_artist_info.setSize(1000, 800);
         concert_artist_info.setVisible(true);
     }
+
+    public void new_merchandise_query (String tour_name, String date, String item_name, String category, String price, String quantity) {
+        try {
+            Connection connection = DriverManager.getConnection(connectionUrl);
+            CallableStatement addMerch = connection.prepareCall("{call add_merch(?, ?, ?, ?, ?, ?)}");
+            addMerch.setString(1, tour_name);
+            Date date_date = Date.valueOf(date);
+            addMerch.setDate(2, date_date);
+            addMerch.setString(3, item_name);
+            addMerch.setString(4, category);
+            BigInteger price_int = new BigInteger(price);
+            addMerch.setBigDecimal(5, new BigDecimal(price_int));
+            Integer quantity_int = Integer.valueOf(quantity);
+            addMerch.setInt(6, quantity_int);
+            int rowsInserted = addMerch.executeUpdate();
+            if (rowsInserted > 0) {
+                confirmation();
+            }
+            else {
+                invalidInformation();
+            }
+        }
+        catch (SQLException s) {
+            invalidInformation();
+            s.printStackTrace();
+        } 
+    }
+
+    public void confirmation () {
+        JFrame confirmation_window = new JFrame("Action Confirmation");
+        JPanel labels = new JPanel();
+        JPanel buttons = new JPanel();
+        JLabel complete = new JLabel("Your action has been complete!");
+        complete.setFont(new Font("Calibri", Font.PLAIN, 30));
+        JButton back_to_home = new JButton("Back to Home");
+        back_to_home.setFont(new Font("Calibri", Font.PLAIN, 30));
+        back_to_home.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                confirmation_window.dispose();
+                goToOrganizerHome();
+            }
+        });
+        labels.setLayout(new BoxLayout(labels, BoxLayout.PAGE_AXIS));
+        buttons.setLayout(new FlowLayout());
+        labels.add(complete);
+        buttons.add(back_to_home);
+        confirmation_window.add(labels, BorderLayout.PAGE_START);
+        confirmation_window.add(buttons, BorderLayout.PAGE_END);
+        confirmation_window.setSize(500, 300);
+        confirmation_window.setVisible(true);
+    }
+
+    public void concertInvalid () {
+        JFrame invalid_info = new JFrame("Concert Invalid Information");
+        JPanel labels = new JPanel();
+        JPanel buttons = new JPanel();
+        JLabel invalid = new JLabel("Invalid information! Please try again.");
+        invalid.setFont(new Font("Calibri", Font.PLAIN, 30));
+        JButton back_to_home = new JButton("Back to Home");
+        back_to_home.setFont(new Font("Calibri", Font.PLAIN, 30));
+        back_to_home.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                invalid_info.dispose();
+                goToOrganizerHome();
+            }
+        });
+        labels.setLayout(new BoxLayout(labels, BoxLayout.PAGE_AXIS));
+        buttons.setLayout(new FlowLayout());
+        labels.add(invalid);
+        buttons.add(back_to_home);
+        invalid_info.add(labels, BorderLayout.PAGE_START);
+        invalid_info.add(buttons, BorderLayout.PAGE_END);
+        invalid_info.setSize(300, 300);
+        invalid_info.setVisible(true);
+    }
+
 
     // QUERY #7: CANCEL CONCERT
     public void inputConcertToDelete() {
@@ -657,8 +1149,10 @@ public class UI {
         submit.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                String tour_name = tour_name_input.getText().trim();
+                String date = date_input.getText().trim();
                 concert_info.dispose();
-                //TODO: add confirmation that artist has been added to the concert, print out concert details
+                delete_query(tour_name, date);
             }
         });
         labels_and_text.setLayout(new BoxLayout(labels_and_text, BoxLayout.PAGE_AXIS));
@@ -673,6 +1167,27 @@ public class UI {
         concert_info.add(buttonsField, BorderLayout.PAGE_END);
         concert_info.setSize(800, 500);
         concert_info.setVisible(true);
+    }
+
+    public void delete_query (String tour_name, String date) {
+        try {
+            Connection connection = DriverManager.getConnection(connectionUrl);
+            CallableStatement delete = connection.prepareCall("{call delete_concert(?, ?)}");
+            delete.setString(1, tour_name);
+            Date date_date = Date.valueOf(date);
+            delete.setDate(2, date_date);
+            int rowsDeleted = delete.executeUpdate();
+            if (rowsDeleted > 0) {
+                confirmation();
+            }
+            else {
+                invalidInformation();
+            }
+        }
+        catch (SQLException s) {
+            invalidInformation();
+            s.printStackTrace();
+        } 
     }
 
 
